@@ -13,9 +13,9 @@ exports.getAllUser=catchAsync(async(req,res,next)=>{
   res.status(202).json({message:'success',users:users})  
 })
 exports.saveUser= catchAsync(async(req,res,next)=>{
-    const { userName, email, password,role } = req.body;
+    const { userName, email, password,role,phone,address } = req.body;
   const imageUrl = req.file ? req.file.path : null;
-   let newUser = await userModel.create({ userName, email, password, image: imageUrl,role })
+   let newUser = await userModel.create({ userName, email, password, image: imageUrl,role,phone,address });
   res.status(202).json({message:'success',users:newUser})
   
 })

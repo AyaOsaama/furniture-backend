@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt= require('bcryptjs')
+const { encrypt } = require('../utils/encryption');
+
 
 let userSchema=mongoose.Schema({
     userName:{
@@ -32,7 +34,6 @@ let userSchema=mongoose.Schema({
     },
     image:{
       type:String,
-
     },
     role:{
       type:String,
@@ -41,14 +42,48 @@ let userSchema=mongoose.Schema({
     },
     refreshToken:{
     type:String
-    }
+    },
+    phone:{
+      type:String,
+      validate:{
+        validator:function (v) {
+            return/^(011|010|012|015)[0-9]{8}$/.test(v)
+        },
+        message:props =>`${props.value} is not a valid phone number`
+      
+      },
+      trim:true,
+    },
+    address:{
+      type:String,
+      trim:true,
+    },
+    whishlist:[{
+      type:mongoose.SchemaTypes.ObjectId,
+      ref:'Product'
+    }],
+    ispurchased:[{
+      type:mongoose.SchemaTypes.ObjectId,
+      ref:'Product'
+    }]
 }, { timestamps: true })
 
 userSchema.pre('save',async function(next){   
 
   const salt=await bcrypt.genSalt(10);
   let hashedPassword =await bcrypt.hash(this.password,salt);
-  this.password = hashedPassword
+  this.password = hashedPassword;
+
+  if (this.phone) {
+    this.phone = encrypt(this.phone);
+  }
+  if (this.address) {
+    this.address = encrypt(this.address);
+  }
+ 
+
+  next();
+
 })
 
 const userModel = mongoose.model('User', userSchema);

@@ -44,5 +44,5 @@ app.use(function(err,req,res,next){
 })
 let port=3000;
 app.listen(port, () => {
-    console.log(`Server running on http://localhost: ${port}`);
+    console.log(`Server running on http://localhost:${port}`);
 })
