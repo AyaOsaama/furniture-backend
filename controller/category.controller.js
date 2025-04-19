@@ -2,7 +2,15 @@ const Category = require("../models/category.model.js");
 const catchAsync = require("../utils/catchAsync.utils.js");
 
 exports.createCategory = catchAsync(async (req, res) => {
-  const category = await Category.create(req.body);
+  const category = await Category.create({
+    image: req.file?.path,
+    name: req.body.name,
+    description: req.body.description,
+    subcategoriesId: req.body.subcategoriesId
+      ? JSON.parse(req.body.subcategoriesId)
+      : [],
+  });
+
   res.status(201).json(category);
 });
 
@@ -20,10 +28,14 @@ exports.getCategoryById = catchAsync(async (req, res) => {
 });
 
 exports.updateCategory = catchAsync(async (req, res) => {
-  const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  res.status(200).json(category);
+  const updatedCategory = await Category.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+    }
+  );
+  res.status(200).json(updatedCategory);
 });
 
 exports.deleteCategory = catchAsync(async (req, res) => {

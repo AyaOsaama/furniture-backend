@@ -2,7 +2,15 @@ const Post = require("../models/post.model.js");
 const catchAsync = require("../utils/catchAsync.utils.js");
 
 exports.createPost = catchAsync(async (req, res) => {
-  const post = await Post.create(req.body);
+  const post = await Post.create({
+    image: req.file.path,
+    title: req.body.title,
+    description: req.body.description,
+    content: req.body.content,
+    like: req.body.like,
+    author: req.body.author,
+  });
+
   res.status(201).json(post);
 });
 
