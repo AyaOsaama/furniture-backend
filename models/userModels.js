@@ -58,14 +58,18 @@ let userSchema=mongoose.Schema({
       type:String,
       trim:true,
     },
-    whishlist:[{
-      type:mongoose.SchemaTypes.ObjectId,
-      ref:'Product'
-    }],
+    wishlist: [{
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'products'
+    }],    
     ispurchased:[{
       type:mongoose.SchemaTypes.ObjectId,
       ref:'Product'
-    }]
+    }],
+    isVerified: { 
+      type: Boolean,
+       default: false},
+    verificationToken: String,
 }, { timestamps: true })
 
 userSchema.pre('save',async function(next){   

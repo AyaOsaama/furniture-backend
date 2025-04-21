@@ -1,11 +1,14 @@
 const jwt = require('jsonwebtoken')
 const {promisify}= require('util')
+const ApiError = require('../utils/ApiError');
+
 
 exports.auth=async(req,res,next)=>{
-    //req headers   {authorization:token}
+    
     const {authorization} = req.headers
     if(! authorization){
-        return res.status(402).json({message:'you must login first'})
+      return next(new ApiError(401, 'You must login first'));
+       
     }
     try{
     let decode=await promisify(jwt.verify) (authorization,process.env.SECRET)
@@ -30,3 +33,10 @@ exports.restrictTo=(...roles)=>{
     }
   }
 }
+exports.validateChangePasswordInput = (req, res, next) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ message: 'All password fields are required' });
+  }
+  next();
+};
