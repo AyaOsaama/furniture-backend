@@ -1,5 +1,5 @@
 const Rating = require("../models/rating.model.js");
-const catchAsync = require("../utils/catchAsync.utils.js");
+const catchAsync = require("../utils/catchAsync.utils");
 
 exports.createRating = catchAsync(async (req, res) => {
   const rating = await Rating.create(req.body);

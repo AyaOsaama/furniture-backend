@@ -6,8 +6,23 @@ const postSchema = new mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String, maxlength: 255 },
     content: { type: String },
-    like: { type: Number, default: 0 },
     author: { type: String },
+
+    likes: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        username: String,
+      },
+    ],
+
+    comments: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        username: String,
+        comment: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

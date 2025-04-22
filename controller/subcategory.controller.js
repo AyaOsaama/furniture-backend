@@ -1,5 +1,5 @@
 const Subcategory = require("../models/subcategory.model.js");
-const catchAsync = require("../utils/catchAsync.utils.js");
+const catchAsync = require("../utils/catchAsync.utils");
 
 exports.createSubcategory = catchAsync(async (req, res) => {
   const subcategory = await Subcategory.create(req.body);
