@@ -12,7 +12,7 @@ exports.register= catchAsync(async(req,res,next)=>{
     const imageUrl = req.file ? req.file.path : 'https://img.freepik.com/premium-psd/user-icematte_161669-211.jpg?w=826';
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    const existingUser = await userModel.findOne({ email });
+    const existingUser = await userModel.findOne({email});
   if (existingUser) {
     return res.status(400).json({ message: "Email already exists" });
   }
@@ -28,7 +28,7 @@ exports.register= catchAsync(async(req,res,next)=>{
 exports.verifyEmail = catchAsync(async (req, res, next) => {
   const { token } = req.params;
 
-  const user = await userModel.findOne({ verificationToken: token });
+  const user = await userModel.findOne({verificationToken: token});
   if (!user) {
     return res.status(400).json({ message: 'Invalid or expired verification token.' });
   }
@@ -109,5 +109,5 @@ exports.logout = catchAsync(async (req, res, next) => {
   }
   user.refreshToken = undefined;
   await user.save();
-  res.status(200).json({ message: 'Logged out successfully.' });
+  res.status(200).json({ message:'Logged out successfully.' });
 });
