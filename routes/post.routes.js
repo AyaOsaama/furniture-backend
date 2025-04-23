@@ -6,6 +6,9 @@ const {
   getPostById,
   updatePost,
   deletePost,
+  likePost,
+  commentPost,
+  deleteComment
 } = require("../controller/post.controller.js");
 const upload = require("../utils/multer.utils.js");
 router.post("/", upload.single("image"), createPost);
