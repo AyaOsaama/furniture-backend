@@ -4,7 +4,10 @@ const ratingSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true },
     value: { type: Number, required: true, min: 1, max: 5 },
-    comment: { type: String },
+    comment: {
+      en: { type: String },
+      ar: { type: String },
+    },
   },
   { timestamps: true }
 );

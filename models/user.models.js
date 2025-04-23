@@ -2,14 +2,20 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const { encrypt } = require("../utils/encryption.utils.js");
 
+
 let userSchema = mongoose.Schema(
   {
     userName: {
-      type: String,
-      unique: true,
-      required: true,
-      minlength: 3,
-      maxlength: 10,
+      en: {
+        type: String,
+        minlength: 3,
+        maxlength: 10,
+      },
+      ar: {
+        type: String,
+        minlength: 3,
+        maxlength: 10,
+      },
     },
     email: {
       type: String,
@@ -36,7 +42,7 @@ let userSchema = mongoose.Schema(
     role: {
       type: String,
       enum: ["super_admin", "admin", "user"],
-      default: "user",
+      default: "user",    
     },
     refreshToken: {
       type: String,
@@ -52,8 +58,8 @@ let userSchema = mongoose.Schema(
       trim: true,
     },
     address: {
-      type: String,
-      trim: true,
+      en: { type: String, trim: true },
+      ar: { type: String, trim: true },
     },
     wishlist: [
       {
@@ -76,20 +82,24 @@ let userSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+
 userSchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt(10);
-  let hashedPassword = await bcrypt.hash(this.password, salt);
-  this.password = hashedPassword;
+  this.password = await bcrypt.hash(this.password, salt);
 
   if (this.phone) {
     this.phone = encrypt(this.phone);
   }
-  if (this.address) {
-    this.address = encrypt(this.address);
+  if (this.address?.en) {
+    this.address.en = encrypt(this.address.en);
+  }
+  if (this.address?.ar) {
+    this.address.ar = encrypt(this.address.ar);
   }
 
   next();
 });
+
 
 const userModel = mongoose.model("User", userSchema);
 module.exports = userModel;
