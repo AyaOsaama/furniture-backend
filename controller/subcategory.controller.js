@@ -1,5 +1,6 @@
 const Subcategory = require("../models/subcategory.model.js");
 const catchAsync = require("../utils/catchAsync.utils");
+const QueryFeatures = require("../utils/queryFeatures.utils.js");
 
 exports.createSubcategory = catchAsync(async (req, res) => {
   const subcategory = await Subcategory.create(req.body);
@@ -7,8 +8,19 @@ exports.createSubcategory = catchAsync(async (req, res) => {
 });
 
 exports.getAllSubcategories = catchAsync(async (req, res) => {
-  const subcategories = await Subcategory.find().populate("categoriesId");
-  res.status(200).json(subcategories);
+  const totalCount = await Subcategory.countDocuments();
+  const features = new QueryFeatures(Subcategory.find(), req.query)
+    .search()
+    .filter()
+    .paginate();
+  const subcategories = await features.query.populate("categoriesId");
+
+  res.status(200).json({
+    message: "All subcategories",
+    totalCount,
+    results: subcategories.length,
+    subcategories,
+  });
 });
 
 exports.getSubcategoryById = catchAsync(async (req, res) => {

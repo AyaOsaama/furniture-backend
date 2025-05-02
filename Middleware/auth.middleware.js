@@ -8,11 +8,13 @@ exports.auth = async (req, res, next) => {
     return next(new ApiError(401, "You must login first"));
   }
   try {
-    let decode = await promisify(jwt.verify)(authorization, process.env.SECRET);
-    console.log(decode);
+    const token = authorization?.startsWith("Bearer ")
+      ? authorization.split(" ")[1]
+      : authorization;
+    let decode = await promisify(jwt.verify)(token, process.env.SECRET);
+    console.log("Decode", decode);
     req.role = decode.data.role;
     req.id = decode.data.id;
-
     next();
   } catch (err) {
     res.status(401).json({ message: "you are not authenticated" });

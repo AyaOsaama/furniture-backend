@@ -8,10 +8,11 @@ const dotenv = require("dotenv");
 dotenv.config();
 //conecct to DB
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const DB_URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.8fkcsmr.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
-mongoose.connect(DB_URI)
-.then(() => {
+mongoose
+  .connect(DB_URI)
+  .then(() => {
     console.log("Successfully connected to the database");
   })
   .catch((err) => {

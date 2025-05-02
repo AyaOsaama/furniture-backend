@@ -1,5 +1,6 @@
 const Rating = require("../models/rating.model.js");
 const catchAsync = require("../utils/catchAsync.utils");
+const QueryFeatures = require("../utils/queryFeatures.utils.js");
 
 exports.createRating = catchAsync(async (req, res) => {
   const rating = await Rating.create(req.body);
@@ -7,8 +8,18 @@ exports.createRating = catchAsync(async (req, res) => {
 });
 
 exports.getAllRatings = catchAsync(async (req, res) => {
-  const ratings = await Rating.find();
-  res.status(200).json(ratings);
+  const totalCount = await Rating.countDocuments();
+  const features = new QueryFeatures(Rating.find(), req.query)
+    .search()
+    .filter()
+    .paginate();
+  const ratings = await features.query;
+  res.status(200).json({
+    message: "All ratings",
+    totalCount,
+    results: ratings.length,
+    ratings,
+  });
 });
 
 exports.getRatingById = catchAsync(async (req, res) => {

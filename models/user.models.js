@@ -2,20 +2,11 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const { encrypt } = require("../utils/encryption.utils.js");
 
-
 let userSchema = mongoose.Schema(
   {
     userName: {
-      en: {
-        type: String,
-        minlength: 3,
-        maxlength: 10,
-      },
-      ar: {
-        type: String,
-        minlength: 3,
-        maxlength: 10,
-      },
+      en: { type: String, minlength: 3, maxlength: 10 },
+      ar: { type: String, minlength: 3, maxlength: 10 },
     },
     email: {
       type: String,
@@ -36,56 +27,31 @@ let userSchema = mongoose.Schema(
       minlength: 6,
       trim: true,
     },
-    image: {
-      type: String,
-    },
+    image: { type: String },
     role: {
       type: String,
       enum: ["super_admin", "admin", "user"],
-      default: "user",    
+      default: "user",
     },
-    refreshToken: {
-      type: String,
-    },
-    phone: {
-      type: String,
-      validate: {
-        validator: function (v) {
-          return /^(011|010|012|015)[0-9]{8}$/.test(v);
-        },
-        message: (props) => `${props.value} is not a valid phone number`,
-      },
-      trim: true,
-    },
+    refreshToken: { type: String },
+    phone: { type: String, trim: true },
     address: {
       en: { type: String, trim: true },
       ar: { type: String, trim: true },
     },
-    wishlist: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "products",
-      },
-    ],
-    ispurchased: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "Product",
-      },
-    ],
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
+    wishlist: [{ type: mongoose.SchemaTypes.ObjectId, ref: "products" }],
+    ispurchased: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Product" }],
+    isVerified: { type: Boolean, default: false },
     verificationToken: String,
   },
   { timestamps: true }
 );
 
-
 userSchema.pre("save", async function (next) {
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  if (this.isModified("password")) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 
   if (this.phone) {
     this.phone = encrypt(this.phone);
@@ -99,7 +65,6 @@ userSchema.pre("save", async function (next) {
 
   next();
 });
-
 
 const userModel = mongoose.model("User", userSchema);
 module.exports = userModel;

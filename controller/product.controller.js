@@ -1,6 +1,7 @@
 const ProductModel = require("../models/product.models.js");
 const ApiError = require("../utils/ApiError.utils.js");
 const catchAsync = require("../utils/catchAsync.utils.js");
+const QueryFeatures = require("../utils/queryFeatures.utils.js");
 
 exports.createProduct = catchAsync(async (req, res, next) => {
   let product = await ProductModel.create(req.body);
@@ -8,11 +9,22 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
-  let products = await ProductModel.find().populate(
+  const totalCount = await ProductModel.countDocuments();
+  const features = new QueryFeatures(ProductModel.find(), req.query)
+    .search()
+    .filter()
+    .paginate();
+  const products = await features.query.populate(
     "categories.main categories.sub",
     "-name"
   );
-  res.status(200).json({ message: "All products", products });
+
+  res.status(200).json({
+    message: "All products",
+    totalCount,
+    results: products.length,
+    products,
+  });
 });
 
 exports.getProductById = catchAsync(async (req, res, next) => {

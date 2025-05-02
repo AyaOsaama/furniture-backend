@@ -1,6 +1,6 @@
 let express = require("express");
 let router = express.Router();
-const { auth } = require("../middleware/auth.middleware");
+const { auth } = require("../Middleware/auth.middleware.js");
 
 let {
   addToCart,

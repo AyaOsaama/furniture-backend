@@ -1,5 +1,6 @@
 const Category = require("../models/category.model.js");
 const catchAsync = require("../utils/catchAsync.utils");
+const QueryFeatures = require("../utils/queryFeatures.utils.js");
 
 exports.createCategory = catchAsync(async (req, res) => {
   const category = await Category.create({
@@ -15,8 +16,19 @@ exports.createCategory = catchAsync(async (req, res) => {
 });
 
 exports.getAllCategories = catchAsync(async (req, res) => {
-  const categories = await Category.find().populate("subcategoriesId");
-  res.status(200).json(categories);
+  const totalCount = await Category.countDocuments();
+  const features = new QueryFeatures(Category.find(), req.query)
+    .search()
+    .filter()
+    .paginate();
+  const categories = await features.query;
+
+  res.status(200).json({
+    message: "All categories",
+    totalCount,
+    results: categories.length,
+    categories,
+  });
 });
 
 exports.getCategoryById = catchAsync(async (req, res) => {

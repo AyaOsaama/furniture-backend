@@ -1,5 +1,6 @@
 const Post = require("../models/post.model.js");
 const catchAsync = require("../utils/catchAsync.utils");
+const QueryFeatures = require("../utils/queryFeatures.utils.js");
 
 exports.createPost = catchAsync(async (req, res) => {
   const post = await Post.create({
@@ -15,9 +16,20 @@ exports.createPost = catchAsync(async (req, res) => {
 });
 
 exports.getAllPosts = catchAsync(async (req, res) => {
-  const posts = await Post.find();
-  res.status(200).json(posts);
-});
+  const totalCount = await Post.countDocuments();
+  const features = new QueryFeatures(Post.find(), req.query)
+    .search()
+    .filter()
+    .paginate();
+    const posts = await features.query;
+
+    res.status(200).json({
+      message: "All posts",
+      totalCount,
+      results: posts.length,
+      posts,
+    });
+  });
 
 exports.getPostById = catchAsync(async (req, res) => {
   const post = await Post.findById(req.params.id);
