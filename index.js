@@ -64,7 +64,7 @@ app.use(function (err, req, res, next) {
 });
 
 // server
-let port = 3000;
+let port = 3000 || process.env.PORT;
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
