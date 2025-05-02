@@ -26,7 +26,12 @@ app.use(
 );
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument,{ customCss: '.swagger-ui .topbar { display: none }'}));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument,{
+  explorer: true,
+  swaggerOptions: {
+    url: './swagger.json',
+  },
+}));
 
 // Routes
 const authRoutes = require("./routes/auth.routes.js");
