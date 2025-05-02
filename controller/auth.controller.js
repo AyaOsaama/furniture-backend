@@ -10,7 +10,7 @@ exports.register = catchAsync(async (req, res, next) => {
   const { userName, email, password, role, phone, address } = req.body;
   const imageUrl = req.file
     ? req.file.path
-    : "https://img.freepik.com/premium-psd/user-icematte_161669-211.jpg?w=826";
+    : "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg";
   const verificationToken = crypto.randomBytes(32).toString("hex");
 
   const existingUser = await userModel.findOne({ email });

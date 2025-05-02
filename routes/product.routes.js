@@ -17,7 +17,7 @@ let {
 router.use(auth);
 
 //EndPoints
-router.route("/").post(createProduct).get(getAllProducts);
+router.route("/").post(upload.single("image"),createProduct).get(getAllProducts);
 router
   .route("/:id")
   .get(getProductById)
