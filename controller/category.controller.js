@@ -17,7 +17,7 @@ exports.createCategory = catchAsync(async (req, res) => {
 
 exports.getAllCategories = catchAsync(async (req, res) => {
   const totalCount = await Category.countDocuments();
-  const features = new QueryFeatures(Category.find(), req.query)
+  const features = new QueryFeatures(Category.find().populate('subcategoriesId'), req.query)
     .search()
     .filter()
     .paginate();
@@ -30,6 +30,7 @@ exports.getAllCategories = catchAsync(async (req, res) => {
     categories,
   });
 });
+
 
 exports.getCategoryById = catchAsync(async (req, res) => {
   const category = await Category.findById(req.params.id).populate(
