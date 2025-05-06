@@ -59,6 +59,7 @@ exports.login = catchAsync(async (req, res, next) => {
   //  let{email,password}= req.body;
   let email = req.body.email || req.body.Email;
   let password = req.body.password || req.body.password;
+  console.log('req.body:', req.body);
 
   if (!email || !password) {
     return res
@@ -96,8 +97,20 @@ exports.login = catchAsync(async (req, res, next) => {
     process.env.REFRESH_SECRET,
     { expiresIn: "15d" }
   );
-  res.status(200).json({ token, refreshToken });
-  await userModel.findOneAndUpdate(
+
+  res.status(200).json({
+    token,
+    refreshToken,
+    user: {
+      id: user._id,
+      name: user.userName,
+      email: user.email,
+      image: user.image,
+      role: user.role,
+    },
+  });
+  
+    await userModel.findOneAndUpdate(
     { _id: user._id },
     { refreshToken: refreshToken }
   );
