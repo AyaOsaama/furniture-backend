@@ -1,6 +1,7 @@
 const orderModel = require("../models/order.models.js");
 const cartModel = require("../models/cart.models.js");
 const ProductModel = require("../models/product.models.js");
+const userModel = require ('../models/user.models.js')
 const ApiError = require("../utils/ApiError.utils.js");
 const catchAsync = require("../utils/catchAsync.utils");
 
@@ -52,7 +53,9 @@ exports.getUserOrders = catchAsync(async (req, res, next) => {
 });
 
 exports.getOrderById = catchAsync(async (req, res, next) => {
-  const order = await orderModel.findById(req.params.orderId);
+  const order = await orderModel.findById(req.params.orderId)
+  .populate('userId', 'userName email') 
+  .populate('products.productId', 'variants.name variants.price variants.discountPrice variants.image');
   if (!order) return next(new ApiError(404, "Order not found"));
   res.status(200).json({ order });
 });
@@ -72,6 +75,10 @@ exports.updateOrderStatus = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllOrders = catchAsync(async (req, res, next) => {
-  const orders = await orderModel.find();
+  const orders = await orderModel
+    .find()
+    .populate('userId', 'userName email') 
+    .populate('products.productId', 'variants.name variants.price variants.discountPrice')
+
   res.status(200).json({ orders });
 });
