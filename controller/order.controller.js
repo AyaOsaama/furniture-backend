@@ -15,35 +15,55 @@ exports.createOrder = catchAsync(async (req, res, next) => {
     return next(new ApiError(400, "Cart is empty"));
   }
 
-  const products = cartItems.map((item) => ({
-    productId: item.productId,
-    quantity: item.quantity,
-    priceAtPurchase: item.priceAtAddition,
-  }));
+  const products = [];
+  let totalPrice = 0;
+
+  for (const item of cartItems) {
+    const product = await ProductModel.findById(item.productId);
+    if (!product || !product.variants || product.variants.length === 0) {
+      return next(new ApiError(404, "Product or variant not found"));
+    }
+
+    
+    const variant = product.variants[0];
+
+    const price = variant.discountPrice || variant.price;
+
+    products.push({
+      productId: item.productId,
+      quantity: item.quantity,
+      priceAtPurchase: price,
+    });
+
+    totalPrice += price * item.quantity;
+  }
 
   const order = await orderModel.create({
     userId,
     products,
     shippingAddress,
     paymentMethod,
+    totalPrice,
+    paymentStatus: paymentMethod === "cash_on_delivery" ? "unpaid" : "paid",
   });
 
   await cartModel.deleteMany({ userId });
 
   res.status(201).json({ message: "Order placed successfully", order });
-  // update in_stock
+
   for (let item of cartItems) {
     const product = await ProductModel.findById(item.productId);
     if (!product) return next(new ApiError(404, "Product not found"));
 
-    if (item.quantity > product.inStock) {
-      return next(new ApiError(400, `Insufficient stock for ${product.name}`));
+    if (item.quantity > product.variants[0].inStock) {
+      return next(new ApiError(400, `Insufficient stock for ${product.variants[0].name.en}`));
     }
 
-    product.inStock -= item.quantity;
+    product.variants[0].inStock -= item.quantity;
     await product.save();
   }
 });
+
 
 exports.getUserOrders = catchAsync(async (req, res, next) => {
   const orders = await orderModel.find({ userId: req.user._id });
