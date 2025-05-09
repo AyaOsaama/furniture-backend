@@ -49,6 +49,7 @@ const categoryRoutes = require("./routes/category.routes.js");
 const subcategoryRoutes = require("./routes/subcategory.routes.js");
 const ratingRoutes = require("./routes/rating.routes.js");
 const postRoutes = require("./routes/post.routes.js");
+const imageRoutes = require('./routes/uploadImage.routes.js')
 app.get('/',(req,res)=>{
   return res.json({message:"Hello"})
 })
@@ -62,6 +63,7 @@ app.use("/categories", categoryRoutes);
 app.use("/subcategories", subcategoryRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/posts", postRoutes);
+app.use("/upload-image",imageRoutes)
 
 // Not Found middleware
 app.use((req, res, next) => {

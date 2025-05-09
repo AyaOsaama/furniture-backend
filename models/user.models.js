@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const { encrypt } = require("../utils/encryption.utils.js");
-
 let userSchema = mongoose.Schema(
   {
     userName: {
@@ -53,15 +51,6 @@ userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
   }
 
-  if (this.phone) {
-    this.phone = encrypt(this.phone);
-  }
-  if (this.address?.en) {
-    this.address.en = encrypt(this.address.en);
-  }
-  if (this.address?.ar) {
-    this.address.ar = encrypt(this.address.ar);
-  }
 
   next();
 });

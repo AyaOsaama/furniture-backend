@@ -12,6 +12,7 @@ let {
   updateUserById,
   changePassword,
 } = require("../controller/user.controller.js");
+const upload = require("../utils/multer.utils.js");
 
 //Protect
 router.use(auth);
@@ -22,7 +23,8 @@ router
   .route("/:id")
   .get(restrictTo("admin", "super_admin"), getUserById)
   .delete(restrictTo("admin", "super_admin"), deleteUserById)
-  .patch(restrictTo("admin", "super_admin"), updateUserById);
+  .patch(upload.single("image"),restrictTo("admin", "super_admin"),updateUserById);
+  
 router.patch(
   "/changePassword",
   auth,

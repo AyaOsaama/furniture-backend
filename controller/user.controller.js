@@ -1,7 +1,6 @@
 const userModel = require("../models/user.models.js");
 const ApiError = require("../utils/ApiError.utils.js");
-const catchAsync = require("../utils/catchAsync.utils");
-const { encrypt, decrypt } = require("../utils/encryption.utils.js");
+const catchAsync = require("../utils/catchAsync.utils.js");
 const bcrypt = require("bcryptjs");
 
 exports.getAllUser = catchAsync(async (req, res, next) => {
@@ -9,17 +8,10 @@ exports.getAllUser = catchAsync(async (req, res, next) => {
   if (users.length === 0) {
     return res.status(404).json({ message: "users do Not Exist" });
   }
-  let decryptedUsers = users.map((user) => {
-    return {
-      ...user.toObject(),
-      phone: user.phone ? decrypt(user.phone) : null,
-      address: {
-        en: user.address?.en ? decrypt(user.address.en) : null,
-        ar: user.address?.ar ? decrypt(user.address.ar) : null,
-      },
-    };
-  });
-  res.status(200).json({ message: "success", users: decryptedUsers });
+
+  const newUsers = users.map((user) => user.toObject());
+
+  res.status(200).json({ message: "success", users: newUsers });
 });
 
 exports.getUserById = catchAsync(async (req, res, next) => {
@@ -28,16 +20,8 @@ exports.getUserById = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new ApiError(404, "User does not found"));
   }
-  const decryptedUser = {
-    ...user.toObject(),
-    phone: user.phone ? decrypt(user.phone) : null,
-    address: {
-      en: user.address?.en ? decrypt(user.address.en) : null,
-      ar: user.address?.ar ? decrypt(user.address.ar) : null,
-    },
-  };
 
-  res.status(200).json({ message: "success", user: decryptedUser });
+  res.status(200).json({ message: "success", user: user.toObject() });
 });
 
 exports.deleteUserById = catchAsync(async (req, res, next) => {
@@ -48,32 +32,45 @@ exports.deleteUserById = catchAsync(async (req, res, next) => {
 
 exports.updateUserById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { phone, address, ...rest } = req.body;
+  console.log("Incoming update body:", req.body);
+
+  let { phone, address, userName, ...rest } = req.body;
+
+  try {
+    if (typeof userName === "string") userName = JSON.parse(userName);
+    if (typeof address === "string") address = JSON.parse(address);
+  } catch (err) {
+    return next(new ApiError(400, "Invalid JSON in userName or address"));
+  }
 
   if (phone && !/^(011|010|012|015)[0-9]{8}$/.test(phone)) {
     return next(new ApiError(400, "Invalid phone number format"));
   }
-  if (address?.en && address.en.length < 5) {
+
+  if (address?.en && address.en.length < 2) {
     return next(
-      new ApiError(400, "Address (EN) must be at least 5 characters")
+      new ApiError(400, "Address (EN) must be at least 2 characters")
     );
   }
-  if (address?.ar && address.ar.length < 5) {
+
+  if (address?.ar && address.ar.length < 2) {
     return next(
-      new ApiError(400, "Address (AR) must be at least 5 characters")
+      new ApiError(400, "Address (AR) must be at least 2 characters")
     );
   }
 
   const updatedData = { ...rest };
-  if (phone) updatedData.phone = encrypt(phone);
-  if (address?.en) {
-    updatedData["address.en"] = encrypt(address.en);
-  }
-  if (address?.ar) {
-    updatedData["address.ar"] = encrypt(address.ar);
+
+  if (phone) updatedData.phone = phone;
+  if (address?.en) updatedData["address.en"] = address.en;
+  if (address?.ar) updatedData["address.ar"] = address.ar;
+  if (userName?.en) updatedData["userName.en"] = userName.en;
+  if (userName?.ar) updatedData["userName.ar"] = userName.ar;
+  if (req.file) {
+    updatedData.image = req.file.path;
   }
 
-  let updatedUser = await userModel.findByIdAndUpdate(id, updatedData, {
+  const updatedUser = await userModel.findByIdAndUpdate(id, updatedData, {
     new: true,
     runValidators: false,
   });
@@ -84,8 +81,10 @@ exports.updateUserById = catchAsync(async (req, res, next) => {
 
   res
     .status(200)
-    .json({ message: "User updated successfully", user: updatedUser });
+    .json({ message: "User updated successfully", user: updatedUser.toObject() });
 });
+
+
 
 exports.changePassword = catchAsync(async (req, res, next) => {
   const id = req.id;

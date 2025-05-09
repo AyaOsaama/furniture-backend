@@ -55,6 +55,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "Email verified successfully!" });
 });
 
+
 exports.login = catchAsync(async (req, res, next) => {
   //  let{email,password}= req.body;
   let email = req.body.email || req.body.Email;
