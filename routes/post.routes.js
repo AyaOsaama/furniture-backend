@@ -14,7 +14,7 @@ const upload = require("../utils/multer.utils.js");
 router.post("/", upload.single("image"), createPost);
 router.get("/", getAllPosts);
 router.get("/:id", getPostById);
-router.put("/:id", updatePost);
+router.put("/:id", upload.single("image"),updatePost);
 router.delete("/:id", deletePost);
 router.put("/like/:id", likePost);
 router.post("/comment/:id", commentPost);
