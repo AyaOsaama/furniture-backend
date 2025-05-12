@@ -21,12 +21,18 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   }
 
   const mainVariantImage = req.files?.variantImage?.[0]
-    ? await uploadBufferToCloudinary(req.files.variantImage[0].buffer)
-    : null;
+  ? await uploadBufferToCloudinary(req.files.variantImage[0].buffer)
+  : null;
 
-  const additionalVariantImages = req.files?.variantImages?.length > 0
-    ? await Promise.all(req.files.variantImages.map(file => uploadBufferToCloudinary(file.buffer)))
-    : [];
+const additionalVariantImages = req.files?.variantImages?.length > 0
+  ? await Promise.all(req.files.variantImages.map(file => uploadBufferToCloudinary(file.buffer)))
+  : [];
+
+if (parsedVariants.length > 0) {
+  parsedVariants[0].image = mainVariantImage;
+  parsedVariants[0].images = additionalVariantImages;
+}
+
 
    const newProductModel= new ProductModel({
     brand,
