@@ -7,6 +7,8 @@ const sendVerificationEmail = require("../utils/mailer.utils.js");
 const crypto = require("crypto");
 
 exports.register = catchAsync(async (req, res, next) => {
+  console.log('req.body:', req.body);
+console.log('req.file:', req.file);
   const { userName, email, password, role, phone, address } = req.body;
   const imageUrl = req.file
     ? req.file.path
@@ -18,22 +20,28 @@ exports.register = catchAsync(async (req, res, next) => {
     return res.status(400).json({ message: "Email already exists" });
   }
 
-  let newUser = await userModel.create({
-    userName,
-    email,
-    password,
-    image: imageUrl,
-    role,
-    phone,
-    address,
-    verificationToken,
-  });
+const parsedUserName = userName ? JSON.parse(userName) : { en: '', ar: '' };
+const parsedAddress = address ? JSON.parse(address) : { en: '', ar: '' };
+
+const newUser = await userModel.create({
+  userName: parsedUserName,
+  email,
+  password,
+  role,
+  phone,
+  address: parsedAddress,
+  image: req.file ? req.file.path : imageUrl,
+  verificationToken,
+});
+
+
   await sendVerificationEmail(email, verificationToken);
 
   res.status(202).json({
     message: "Check your email to verify your account",
     users: newUser,
   });
+
   console.log("Generated Token:", verificationToken);
   console.log("New User:", newUser);
 });
@@ -50,11 +58,36 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
 
   user.isVerified = true;
   user.verificationToken = undefined;
+
   await user.save();
 
   res.status(200).json({ message: "Email verified successfully!" });
 });
+// exports.verifyEmail = catchAsync(async (req, res, next) => {
+//   const { token } = req.params;
 
+//   const user = await userModel.findOne({ verificationToken: token });
+//   if (!user) {
+//     return res.status(400).json({ message: "Invalid or expired verification token." });
+//   }
+
+//   user.isVerified = true;
+//   user.verificationToken = undefined;
+
+//   const phone = user.phone ? decrypt(user.phone) : null;
+//   const address = {
+//     en: user.address?.en ? decrypt(user.address.en) : null,
+//     ar: user.address?.ar ? decrypt(user.address.ar) : null,
+//   };
+
+//   await user.save();
+
+//   res.status(200).json({ 
+//     message: "Email verified successfully!",
+//     phone,
+//     address
+//   });
+// });
 
 exports.login = catchAsync(async (req, res, next) => {
   //  let{email,password}= req.body;

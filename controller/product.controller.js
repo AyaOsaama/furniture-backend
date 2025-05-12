@@ -2,18 +2,54 @@ const ProductModel = require("../models/product.models.js");
 const ApiError = require("../utils/ApiError.utils.js");
 const catchAsync = require("../utils/catchAsync.utils.js");
 const QueryFeatures = require("../utils/queryFeatures.utils.js");
+const { uploadBufferToCloudinary } = require("../utils/cloudinary.utils.js");
+
 
 exports.createProduct = catchAsync(async (req, res, next) => {
-  let product = await ProductModel.create(req.body);
-  res.status(201).json({ message: "added new product success", product });
+  console.log('req.body:', req.body);
+  console.log('req.files:', req.files);
+
+  const { brand, categories, description, material, variants } = req.body;
+
+  const parsedCategories = categories ? JSON.parse(categories) : { main: '', sub: '' };
+  const parsedDescription = description ? JSON.parse(description) : { en: '', ar: '' };
+  const parsedMaterial = material ? JSON.parse(material) : { en: '', ar: '' };
+  const parsedVariants = variants ? JSON.parse(variants) : [];
+
+  if (!Array.isArray(parsedVariants)) {
+    return next(new ApiError('Variants must be an array', 400));
+  }
+
+  const mainVariantImage = req.files?.variantImage?.[0]
+    ? await uploadBufferToCloudinary(req.files.variantImage[0].buffer)
+    : null;
+
+  const additionalVariantImages = req.files?.variantImages?.length > 0
+    ? await Promise.all(req.files.variantImages.map(file => uploadBufferToCloudinary(file.buffer)))
+    : [];
+
+   const newProductModel= new ProductModel({
+    brand,
+    categories: parsedCategories,
+    description: parsedDescription,
+    material: parsedMaterial,
+   variants: parsedVariants
+    })
+    const newProduct = await newProductModel.save();
+  res.status(201).json({
+    message: "Product created successfully",
+    product: newProduct
+  });
+
 });
+
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   const totalCount = await ProductModel.countDocuments();
   const features = new QueryFeatures(ProductModel.find(), req.query)
     .search()
     .filter()
-    .paginate();
+    // .paginate();
   const products = await features.query.populate(
     "categories.main categories.sub",
     "-name"
@@ -67,8 +103,17 @@ exports.addVariant = catchAsync(async (req, res, next) => {
     );
   }
 
-  const image = req.files?.image?.[0]?.path;
-  const images = req.files?.images?.map((img) => img.path) || [];
+  let image = null;
+  if (req.files?.image?.[0]) {
+    image = await uploadBufferToCloudinary(req.files.image[0].buffer);
+  }
+
+  let images = [];
+  if (req.files?.images?.length > 0) {
+    images = await Promise.all(
+      req.files.images.map(file => uploadBufferToCloudinary(file.buffer))
+    );
+  }
 
   product.variants.push({
     ...rest,
@@ -79,9 +124,9 @@ exports.addVariant = catchAsync(async (req, res, next) => {
   });
 
   await product.save();
-
   res.status(200).json({ message: "Variant added", product });
 });
+
 
 exports.deleteVariant = catchAsync(async (req, res, next) => {
   const product = await ProductModel.findById(req.params.id);
@@ -113,11 +158,13 @@ exports.updateVariant = catchAsync(async (req, res, next) => {
   }
 
   if (req.files?.image?.[0]) {
-    updated.image = req.files.image[0].path;
+    updated.image = await uploadBufferToCloudinary(req.files.image[0].buffer);
   }
 
   if (req.files?.images?.length > 0) {
-    updated.images = req.files.images.map((img) => img.path);
+    updated.images = await Promise.all(
+      req.files.images.map(file => uploadBufferToCloudinary(file.buffer))
+    );
   }
 
   Object.assign(variant, updated);
@@ -125,3 +172,6 @@ exports.updateVariant = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ message: "Variant updated", product });
 });
+
+
+

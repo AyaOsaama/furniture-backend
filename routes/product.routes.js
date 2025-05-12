@@ -19,8 +19,16 @@ router.use(auth);
 //EndPoints
 router
   .route("/")
-  .post(upload.single("image"), createProduct)
-  .get(getAllProducts);
+  .post(
+    upload.fields([
+      { name: "image", maxCount: 1 },
+      { name: "images", maxCount: 5 },
+      { name: "variantImage", maxCount: 1 },
+      { name: "variantImages", maxCount: 5 },
+    ]),
+    createProduct
+  )
+    .get(getAllProducts);
 router
   .route("/:id")
   .get(getProductById)

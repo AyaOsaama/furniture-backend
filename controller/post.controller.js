@@ -6,14 +6,15 @@ const QueryFeatures = require("../utils/queryFeatures.utils.js");
 exports.createPost = catchAsync(async (req, res) => {
   const post = await Post.create({
     image: req.file.path,
-    title: req.body.title,
-    description: req.body.description,
-    content: req.body.content,
+    title: JSON.parse(req.body.title),
+    description: JSON.parse(req.body.description),
+    content: JSON.parse(req.body.content),
     author: req.body.author,
   });
 
   res.status(201).json(post);
 });
+
 
 exports.getAllPosts = catchAsync(async (req, res) => {
   const totalCount = await Post.countDocuments();
@@ -115,4 +116,9 @@ exports.deleteComment = catchAsync(async (req, res) => {
 
   await post.save();
   res.status(200).json({ message: "Comment deleted successfully" });
+});
+exports.deleteAllPosts = catchAsync(async (req, res) => {
+  await Post.deleteMany({});
+  
+  res.status(204).send();
 });

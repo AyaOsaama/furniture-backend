@@ -11,10 +11,20 @@ const ProductSchema = new mongoose.Schema({
       en: { type: String },
       ar: { type: String }
     },
-    image: { type: String, required: true, trim: true },
+    image: { type: String, required: false, trim: true },
     images: [{ type: String, trim: true }],
     inStock: { type: Number, required: true, default: 0, min: 0 },
-    discountPrice: { type: Number, min: 0 }
+    discountPrice: {
+      type: Number,
+      min: 0,
+      validate: {
+        validator: function (value) {
+          return value < this.price;
+        },
+        message: "Discount price must be less than the original price"
+      }
+    }
+    
   }],
 
   description: {
@@ -30,7 +40,7 @@ const ProductSchema = new mongoose.Schema({
   brand: { type: String },
 
   categories: {
-    main: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+    main: { type: mongoose.Schema.Types.ObjectId, ref: 'Category'},
     sub: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' }
   },
 

@@ -8,11 +8,13 @@ const {
   deletePost,
   likePost,
   commentPost,
-  deleteComment
+  deleteComment,
+  deleteAllPosts
 } = require("../controller/post.controller.js");
 const upload = require("../utils/multer.utils.js");
 router.post("/", upload.single("image"), createPost);
 router.get("/", getAllPosts);
+router.delete("/", deleteAllPosts);
 router.get("/:id", getPostById);
 router.put("/:id", upload.single("image"),updatePost);
 router.delete("/:id", deletePost);
