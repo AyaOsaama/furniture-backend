@@ -47,7 +47,10 @@ const ProductSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Order'
-  }
+  },
+  averageRating: { type: Number, default: 0 },
+  ratingCount: { type: Number, default: 0 },
+
 }, { timestamps: true });
 
 const ProductModel = mongoose.model('products', ProductSchema);
