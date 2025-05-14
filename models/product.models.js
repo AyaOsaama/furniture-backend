@@ -23,7 +23,9 @@ const ProductSchema = new mongoose.Schema({
         },
         message: "Discount price must be less than the original price"
       }
-    }
+    },
+    averageRating: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
     
   }],
 
@@ -48,8 +50,7 @@ const ProductSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Order'
   },
-  averageRating: { type: Number, default: 0 },
-  ratingCount: { type: Number, default: 0 },
+
 
 }, { timestamps: true });
 

@@ -2,6 +2,8 @@ const userModel = require("../models/user.models.js");
 const ApiError = require("../utils/ApiError.utils.js");
 const catchAsync = require("../utils/catchAsync.utils.js");
 const bcrypt = require("bcryptjs");
+const { uploadBufferToCloudinary } = require("../utils/cloudinary.utils");
+
 
 exports.getAllUser = catchAsync(async (req, res, next) => {
   let users = await userModel.find();
@@ -32,8 +34,6 @@ exports.deleteUserById = catchAsync(async (req, res, next) => {
 
 exports.updateUserById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  console.log("Incoming update body:", req.body);
-
   let { phone, address, userName, ...rest } = req.body;
 
   try {
@@ -48,26 +48,23 @@ exports.updateUserById = catchAsync(async (req, res, next) => {
   }
 
   if (address?.en && address.en.length < 2) {
-    return next(
-      new ApiError(400, "Address (EN) must be at least 2 characters")
-    );
+    return next(new ApiError(400, "Address (EN) must be at least 2 characters"));
   }
 
   if (address?.ar && address.ar.length < 2) {
-    return next(
-      new ApiError(400, "Address (AR) must be at least 2 characters")
-    );
+    return next(new ApiError(400, "Address (AR) must be at least 2 characters"));
   }
 
   const updatedData = { ...rest };
-
   if (phone) updatedData.phone = phone;
   if (address?.en) updatedData["address.en"] = address.en;
   if (address?.ar) updatedData["address.ar"] = address.ar;
   if (userName?.en) updatedData["userName.en"] = userName.en;
   if (userName?.ar) updatedData["userName.ar"] = userName.ar;
-  if (req.file) {
-    updatedData.image = req.file.path;
+
+  if (req.file && req.file.buffer) {
+    const imageUrl = await uploadBufferToCloudinary(req.file.buffer, 'users');
+    updatedData.image = imageUrl;
   }
 
   const updatedUser = await userModel.findByIdAndUpdate(id, updatedData, {
@@ -79,10 +76,9 @@ exports.updateUserById = catchAsync(async (req, res, next) => {
     return next(new ApiError(404, "User not found"));
   }
 
-  res
-    .status(200)
-    .json({ message: "User updated successfully", user: updatedUser.toObject() });
+  res.status(200).json({ message: "User updated successfully", user: updatedUser.toObject() });
 });
+
 
 
 

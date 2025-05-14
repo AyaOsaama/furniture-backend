@@ -4,7 +4,11 @@ const QueryFeatures = require("../utils/queryFeatures.utils.js");
 
 exports.createSubcategory = catchAsync(async (req, res) => {
   const subcategory = await Subcategory.create(req.body);
+  console.log('====================================');
+  console.log(req.body);
+  console.log('====================================');
   res.status(201).json(subcategory);
+  
 });
 
 exports.getAllSubcategories = catchAsync(async (req, res) => {
@@ -12,7 +16,7 @@ exports.getAllSubcategories = catchAsync(async (req, res) => {
   const features = new QueryFeatures(Subcategory.find(), req.query)
     .search()
     .filter()
-    .paginate();
+    // .paginate();
   const subcategories = await features.query.populate("categoriesId");
 
   res.status(200).json({

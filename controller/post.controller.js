@@ -2,10 +2,18 @@ const mongoose = require("mongoose");
 const Post = require("../models/post.model.js");
 const catchAsync = require("../utils/catchAsync.utils");
 const QueryFeatures = require("../utils/queryFeatures.utils.js");
+const { uploadBufferToCloudinary } = require("../utils/cloudinary.utils");
+
 
 exports.createPost = catchAsync(async (req, res) => {
+  let imageUrl = "";
+
+  if (req.file && req.file.buffer) {
+    imageUrl = await uploadBufferToCloudinary(req.file.buffer, 'posts');
+  }
+
   const post = await Post.create({
-    image: req.file.path,
+    image: imageUrl,
     title: JSON.parse(req.body.title),
     description: JSON.parse(req.body.description),
     content: JSON.parse(req.body.content),
@@ -14,6 +22,7 @@ exports.createPost = catchAsync(async (req, res) => {
 
   res.status(201).json(post);
 });
+
 
 
 exports.getAllPosts = catchAsync(async (req, res) => {
@@ -44,9 +53,11 @@ exports.getPostById = catchAsync(async (req, res) => {
   res.status(200).json(post);
 });
 
+
 exports.updatePost = catchAsync(async (req, res) => {
-  if (req.file) {
-    req.body.image = req.file.path;  
+  if (req.file && req.file.buffer) {
+    const imageUrl = await uploadBufferToCloudinary(req.file.buffer, 'posts');
+    req.body.image = imageUrl;
   }
 
   const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
@@ -59,6 +70,7 @@ exports.updatePost = catchAsync(async (req, res) => {
 
   res.status(200).json(post);
 });
+
 
 
 exports.deletePost = catchAsync(async (req, res) => {

@@ -5,14 +5,16 @@ const ApiError = require("../utils/ApiError.utils.js");
 const catchAsync = require("../utils/catchAsync.utils");
 const sendVerificationEmail = require("../utils/mailer.utils.js");
 const crypto = require("crypto");
+const { uploadBufferToCloudinary } = require("../utils/cloudinary.utils");
 
 exports.register = catchAsync(async (req, res, next) => {
-  console.log('req.body:', req.body);
-console.log('req.file:', req.file);
   const { userName, email, password, role, phone, address } = req.body;
-  const imageUrl = req.file
-    ? req.file.path
-    : "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg";
+
+  let imageUrl = "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg";
+  if (req.file && req.file.buffer) {
+    imageUrl = await uploadBufferToCloudinary(req.file.buffer, 'users');
+  }
+
   const verificationToken = crypto.randomBytes(32).toString("hex");
 
   const existingUser = await userModel.findOne({ email });
@@ -20,20 +22,19 @@ console.log('req.file:', req.file);
     return res.status(400).json({ message: "Email already exists" });
   }
 
-const parsedUserName = userName ? JSON.parse(userName) : { en: '', ar: '' };
-const parsedAddress = address ? JSON.parse(address) : { en: '', ar: '' };
+  const parsedUserName = userName ? JSON.parse(userName) : { en: '', ar: '' };
+  const parsedAddress = address ? JSON.parse(address) : { en: '', ar: '' };
 
-const newUser = await userModel.create({
-  userName: parsedUserName,
-  email,
-  password,
-  role,
-  phone,
-  address: parsedAddress,
-  image: req.file ? req.file.path : imageUrl,
-  verificationToken,
-});
-
+  const newUser = await userModel.create({
+    userName: parsedUserName,
+    email,
+    password,
+    role,
+    phone,
+    address: parsedAddress,
+    image: imageUrl,
+    verificationToken,
+  });
 
   await sendVerificationEmail(email, verificationToken);
 
@@ -41,10 +42,8 @@ const newUser = await userModel.create({
     message: "Check your email to verify your account",
     users: newUser,
   });
-
-  console.log("Generated Token:", verificationToken);
-  console.log("New User:", newUser);
 });
+
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
   const { token } = req.params;
