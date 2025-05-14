@@ -6,6 +6,9 @@ const { uploadBufferToCloudinary } = require("../utils/cloudinary.utils");
 
 
 exports.createCategory = catchAsync(async (req, res) => {
+  console.log('====================================');
+  console.log(Req.res);
+  console.log('====================================');
   let imageUrl = '';
 
   if (req.file && req.file.buffer) {

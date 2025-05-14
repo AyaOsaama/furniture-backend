@@ -101,12 +101,20 @@ exports.addVariant = catchAsync(async (req, res, next) => {
   const product = await ProductModel.findById(req.params.id);
   if (!product) return next(new ApiError(404, "Product not found"));
 
-  const { price, discountPrice, ...rest } = req.body;
+  // Parse values from req.body
+  const {
+    price,
+    discountPrice,
+    material,
+    description,
+    ...rest
+  } = req.body;
+
+  const parsedMaterial = material ? JSON.parse(material) : { en: '', ar: '' };
+  const parsedDescription = description ? JSON.parse(description) : { en: '', ar: '' };
 
   if (discountPrice && discountPrice >= price) {
-    return next(
-      new ApiError(400, "Discount price must be less than the actual price")
-    );
+    return next(new ApiError(400, "Discount price must be less than the actual price"));
   }
 
   let image = null;
@@ -125,6 +133,8 @@ exports.addVariant = catchAsync(async (req, res, next) => {
     ...rest,
     price,
     discountPrice,
+    material: parsedMaterial,
+    description: parsedDescription,
     image,
     images,
   });
@@ -132,6 +142,7 @@ exports.addVariant = catchAsync(async (req, res, next) => {
   await product.save();
   res.status(200).json({ message: "Variant added", product });
 });
+
 
 
 exports.deleteVariant = catchAsync(async (req, res, next) => {
@@ -155,12 +166,28 @@ exports.updateVariant = catchAsync(async (req, res, next) => {
   const variant = product.variants.id(req.params.variantId);
   if (!variant) return next(new ApiError(404, "Variant not found"));
 
-  const updated = { ...variant.toObject(), ...req.body };
+  const {
+    price,
+    discountPrice,
+    material,
+    description,
+    ...rest
+  } = req.body;
+
+  const parsedMaterial = material ? JSON.parse(material) : variant.material;
+  const parsedDescription = description ? JSON.parse(description) : variant.description;
+
+  const updated = {
+    ...variant.toObject(),
+    ...rest,
+    price,
+    discountPrice,
+    material: parsedMaterial,
+    description: parsedDescription,
+  };
 
   if (updated.discountPrice && updated.discountPrice >= updated.price) {
-    return next(
-      new ApiError(400, "Discount price must be less than the actual price")
-    );
+    return next(new ApiError(400, "Discount price must be less than the actual price"));
   }
 
   if (req.files?.image?.[0]) {
@@ -178,6 +205,7 @@ exports.updateVariant = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ message: "Variant updated", product });
 });
+
 
 
 
