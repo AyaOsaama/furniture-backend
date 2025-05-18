@@ -18,11 +18,11 @@ let cartSchema = mongoose.Schema({
     },
     priceAtAddition:{
         type: Number,
-        required: true,
         min: 0
     }
-})
+},  { timestamps: true } 
+)
 
 
 let cartModel = mongoose.model('Cart', cartSchema)
-module.exports = cartModel
+module.exports = cartModel;

@@ -4,7 +4,7 @@ let userSchema = mongoose.Schema(
   {
     userName: {
       en: { type: String, minlength: 3, maxlength: 10 },
-      ar: { type: String, minlength: 3, maxlength: 20 },
+      ar: { type: String},
     },
     email: {
       type: String,

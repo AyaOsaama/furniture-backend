@@ -6,8 +6,11 @@ const catchAsync = require("../utils/catchAsync.utils");
 const sendVerificationEmail = require("../utils/mailer.utils.js");
 const crypto = require("crypto");
 const { uploadBufferToCloudinary } = require("../utils/cloudinary.utils");
+const { log } = require("console");
 
 exports.register = catchAsync(async (req, res, next) => {
+  console.log(`Register`,req.body);
+  
   const { userName, email, password, role, phone, address } = req.body;
 
   let imageUrl = "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg";
@@ -22,8 +25,8 @@ exports.register = catchAsync(async (req, res, next) => {
     return res.status(400).json({ message: "Email already exists" });
   }
 
-  const parsedUserName = userName ? JSON.parse(userName) : { en: '', ar: '' };
-  const parsedAddress = address ? JSON.parse(address) : { en: '', ar: '' };
+  const parsedUserName = typeof userName === 'string' ? JSON.parse(userName) : userName;
+const parsedAddress = typeof address === 'string' ? JSON.parse(address) : { en: '', ar: '' };
 
   const newUser = await userModel.create({
     userName: parsedUserName,
@@ -136,10 +139,11 @@ exports.login = catchAsync(async (req, res, next) => {
     refreshToken,
     user: {
       id: user._id,
-      name: user.userName,
+  name: user.userName?.en || user.userName?.ar,
       email: user.email,
       image: user.image,
       role: user.role,
+      phone:user.phone
     },
   });
   

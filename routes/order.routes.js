@@ -10,12 +10,15 @@ let {
 } = require("../controller/order.controller.js");
 
 //Protect
-// router.use(auth);
+router.use(auth);
 
 //EndPoints
-router.get("/all",auth , restrictTo("super_admin","admin"),getAllOrders);
-router.post("/", auth, createOrder);
-router.get("/", auth, getUserOrders);
-router.get("/:orderId", auth, getOrderById);
-router.patch("/:orderId",auth, restrictTo("super_admin", "admin"),updateOrderStatus);
+router.get("/all" , restrictTo("super_admin","admin"),getAllOrders);
+router.post("/", createOrder);
+router.get("/", getUserOrders);
+router.get("/:orderId", getOrderById);
+router.patch("/:orderId", restrictTo("super_admin", "admin"),updateOrderStatus);
+
+
+
 module.exports = router;

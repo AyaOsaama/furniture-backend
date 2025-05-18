@@ -30,7 +30,7 @@ exports.getAllPosts = catchAsync(async (req, res) => {
   const features = new QueryFeatures(Post.find(), req.query)
     .search()
     .filter()
-    .paginate();
+    // .paginate();
 
   const posts = await features.query
     .populate("likes.user", "userName email image")

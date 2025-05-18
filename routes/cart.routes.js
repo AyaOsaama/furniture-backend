@@ -1,23 +1,32 @@
-let express = require("express");
-let router = express.Router();
-const { auth } = require("../Middleware/auth.middleware.js");
+const express = require("express");
+const router = express.Router();
+let { auth } = require("../Middleware/auth.middleware");
 
-let {
+const {
   addToCart,
   getCartByUser,
   updateCartProduct,
   deleteCartProduct,
   clearCart,
+  getLastProduct,
+  getSuggestedProducts,
 } = require("../controller/cart.controller.js");
 
-//Protect
-router.use(auth);
+router.use(auth); 
 
-//EndPoints
+// Existing endpoints
 router.post("/", addToCart);
 router.get("/", getCartByUser);
+router.delete("/clear", clearCart);
+// ** جلب آخر منتج مضاف **
+router.get("/last-product/:userId", getLastProduct);
+
+// ** جلب المنتجات المقترحة بناء على الفئة **
+router.get("/suggested/:categoryId", getSuggestedProducts);
+
 router.patch("/:cartProductId", updateCartProduct);
 router.delete("/:cartProductId", deleteCartProduct);
-router.delete("/clear", clearCart);
+
+
 
 module.exports = router;

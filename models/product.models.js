@@ -46,10 +46,10 @@ const ProductSchema = new mongoose.Schema({
     sub: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' }
   },
 
-  orderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Order'
-  },
+  // orderId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Order'
+  // },
 
 
 }, { timestamps: true });
