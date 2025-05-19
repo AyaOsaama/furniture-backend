@@ -1,6 +1,6 @@
 let express = require("express");
 let router = express.Router();
-let { auth } = require("../Middleware/auth.middleware.js");
+// let { auth } = require("../Middleware/auth.middleware.js");
 const upload = require("../utils/multer.utils.js");
 let {
   createProduct,
@@ -14,7 +14,7 @@ let {
 } = require("../controller/product.controller.js");
 
 //Protect
-router.use(auth);
+// router.use(auth);
 
 //EndPoints
 router
